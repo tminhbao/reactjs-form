@@ -1,6 +1,11 @@
 import React, { Component } from "react";
 
 export default class TableUser extends Component {
+  // shouldComponentUpdate(newProps, newState) {
+  //   if (this.props.arraySinhVien.length !== newProps.arraySinhVien.length)
+  //     return true;
+  //   return false;
+  // }
   render() {
     let { arraySinhVien, handleEditSinhVien, handleDelSinhVien } = this.props;
     return (

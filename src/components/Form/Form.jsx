@@ -47,7 +47,6 @@ export default class Form extends Component {
     ],
     arraySinhVienSearch: [],
   };
-
   checkFormValid = () => {
     let { formValue, formError } = this.state;
     for (let key in formError) {
@@ -78,8 +77,6 @@ export default class Form extends Component {
     let dataMaxLength = e.target.getAttribute("data-max-length");
     let dataMinLength = e.target.getAttribute("data-min-length");
 
-    console.log(typeof e.target.value);
-
     // Kiểm tra rỗng
     if (e.target.value.trim() === "")
       message = e.target.name + " can not be empty";
@@ -103,7 +100,6 @@ export default class Form extends Component {
       message = e.target.name + ` from ${dataMinLength} to ${dataMaxLength} `;
 
     newFormError[e.target.name] = message;
-    console.log(newFormValue);
     this.setState(
       {
         formValue: newFormValue,
@@ -126,7 +122,6 @@ export default class Form extends Component {
     );
     if (sinhVienUpdate) {
       for (let key in sinhVienUpdate) {
-        console.log(key);
         if (key !== "maSV") sinhVienUpdate[key] = formValue[key];
       }
     }
@@ -203,11 +198,69 @@ export default class Form extends Component {
     }
     this.setState({ arraySinhVienSearch: arrayKetQua });
   };
+  // static getDerivedStateFromProps(newProps, currentState) {
+  //   // Xủ lí state trước khi render ra giao diện
+  //   // Load từ local storage ra state, binding ra giao diện
+  //   let localArraySinhVien = JSON.parse(localStorage.getItem("arraySinhVien"));
+  //   let localArraySinhVienSearch = JSON.parse(
+  //     localStorage.getItem("arraySinhVienSearch")
+  //   );
+  //   console.log("newProps", newProps);
+  //   console.log("currentState", currentState);
+  //   return {
+  //     formValue: {
+  //       maSV: "",
+  //       hoTen: "",
+  //       soDienThoai: "",
+  //       email: "",
+  //     },
+  //     formError: {
+  //       maSV: "",
+  //       hoTen: "",
+  //       soDienThoai: "",
+  //       email: "",
+  //     },
+  //     valid: false,
+  //     arraySinhVien: localArraySinhVien,
+  //     arraySinhVienSearch: localArraySinhVienSearch,
+  //   };
+  //   if (newProps !== currentState) {
+  //     //   //Change in props
+  //     //   return{
+  //     //       name: props.name
+  //     //   };
+  //   }
+  // }
+
+  componentDidMount() {
+    let localArraySinhVien = JSON.parse(localStorage.getItem("arraySinhVien"));
+    let localArraySinhVienSearch = JSON.parse(
+      localStorage.getItem("arraySinhVienSearch")
+    );
+    console.log(localArraySinhVien);
+    console.log(localArraySinhVienSearch);
+    this.setState({
+      formValue: {
+        maSV: "",
+        hoTen: "",
+        soDienThoai: "",
+        email: "",
+      },
+      formError: {
+        maSV: "",
+        hoTen: "",
+        soDienThoai: "",
+        email: "",
+      },
+      valid: false,
+      arraySinhVien: localArraySinhVien,
+      arraySinhVienSearch: localArraySinhVienSearch,
+    });
+  }
 
   render() {
-    let { formValue, arraySinhVienSearch } = this.state;
-    console.log("arraySinhVien", this.state.arraySinhVien);
-    console.log("arraySinhVienSearch", arraySinhVienSearch);
+    let { formValue, arraySinhVienSearch, arraySinhVien } = this.state;
+    console.log("arraySinhVien", arraySinhVien);
     return (
       <React.Fragment>
         <form className="container" onSubmit={this.handleSubmit}>
@@ -351,21 +404,14 @@ export default class Form extends Component {
     );
   }
 
-  // componentDidMount() {
-  //   // Gọi API sau khi render thực thi xong (tại sao lại gọi didmount vì didmount chỉ chạy 1 lần duy nhất sau khi render)
-  //   let promise = axios({
-  //     url: "https://svcy.myclass.vn/api/Product/GetAll",
-  //     method: "GET",
-  //   });
-  //   promise
-  //     .then((res) =>
-  //       this.setState(
-  //         {
-  //           arrayProduct: res.data,
-  //         },
-  //         () => console.log("API", res.data)
-  //       )
-  //     )
-  //     .catch((err) => console.log(err));
-  // }
+  componentWillUnmount() {
+    localStorage.setItem(
+      "arraySinhVien",
+      JSON.stringify(this.state.arraySinhVien)
+    );
+    localStorage.setItem(
+      "arraySinhVienSearch",
+      JSON.stringify(this.state.arraySinhVienSearch)
+    );
+  }
 }
