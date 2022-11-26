@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import TableUser from "../TableUser/TableUser";
 import axios from "axios";
+import SearchBar from "../SearchBar/SearchBar";
+import TablerSearchUser from "../TableSearchUser/TableSearchUser";
 
 export default class Form extends Component {
   state = {
@@ -20,16 +22,33 @@ export default class Form extends Component {
     arraySinhVien: [
       {
         maSV: "1",
-        hoTen: "Ngô Bá Khá",
+        hoTen: "Tăng Duy Tân",
         soDienThoai: "0123456789",
-        email: "khabanh@gmail.com",
+        email: "duytan@gmail.com",
+      },
+      {
+        maSV: "2",
+        hoTen: "Bùi Lan Hương",
+        soDienThoai: "0123478922",
+        email: "blhuong@gmail.com",
+      },
+      {
+        maSV: "3",
+        hoTen: "Doãn Hiếu",
+        soDienThoai: "0123427922",
+        email: "doanhieu@gmail.com",
+      },
+      {
+        maSV: "4",
+        hoTen: "Trung Quân Idol",
+        soDienThoai: "0123478922",
+        email: "trungqun@gmail.com",
       },
     ],
+    arraySinhVienSearch: [],
   };
 
   checkFormValid = () => {
-    // return true : khi form hợp lệ và ngược lại
-    // form hợp lệ khi các trường formError = null và các formValue khác rỗng
     let { formValue, formError } = this.state;
     for (let key in formError) {
       if (formError[key] || !formValue[key]) return false;
@@ -47,7 +66,6 @@ export default class Form extends Component {
     arraySinhVien.push({ ...this.state.formValue });
     this.setState({ arraySinhVien: arraySinhVien });
   };
-
   handleChangeInput = (e) => {
     // let object formValue ra xử lí riêng
     let newFormValue = this.state.formValue;
@@ -60,8 +78,12 @@ export default class Form extends Component {
     let dataMaxLength = e.target.getAttribute("data-max-length");
     let dataMinLength = e.target.getAttribute("data-min-length");
 
+    console.log(typeof e.target.value);
+
+    // Kiểm tra rỗng
     if (e.target.value.trim() === "")
       message = e.target.name + " can not be empty";
+    // Kiểu tra kiểu dữ liệu
     else {
       if (dataType === "number") {
         let regexNumber = /^d{0,8}(.d{1,4})?$/;
@@ -75,9 +97,10 @@ export default class Form extends Component {
           message = e.target.name + " must be a string";
         }
       }
-      if (e.target.value.length > dataMaxLength)
-        message = e.target.name + ` from ${dataMinLength} to ${dataMaxLength} `;
     }
+    // Kiểm tra độ dài cho phép
+    if (e.target.value.length > dataMaxLength)
+      message = e.target.name + ` from ${dataMinLength} to ${dataMaxLength} `;
 
     newFormError[e.target.name] = message;
     console.log(newFormValue);
@@ -96,22 +119,24 @@ export default class Form extends Component {
     // attributes: thuộc tính mở rộng, do mình thêm vào --> không thể dùng dom get thuộc tính được
     // phải dùng getAttribute;
   };
-  handleUpdateProduct = () => {
-    let { arrayProduct, formValue } = this.state;
-    let proUpdate = arrayProduct.find((pro) => pro.id === formValue.id);
-    if (proUpdate) {
-      for (let key in proUpdate) {
-        if (key !== "id") proUpdate[key] = formValue[key];
+  handleUpdateSinhVien = () => {
+    let { arraySinhVien, formValue } = this.state;
+    let sinhVienUpdate = arraySinhVien.find(
+      (pro) => pro.maSV === formValue.maSV
+    );
+    if (sinhVienUpdate) {
+      for (let key in sinhVienUpdate) {
+        console.log(key);
+        if (key !== "maSV") sinhVienUpdate[key] = formValue[key];
       }
     }
     // Cập nhật lại
-    this.setState({ arrayProduct: arrayProduct });
+    this.setState({ arraySinhVien: arraySinhVien });
   };
-
   // Chỉnh sửa và xóa
-  handleEditSinhVien = (productClick) => {
+  handleEditSinhVien = (sinhVienClick) => {
     // CLick vào product nào thì state của formValue sẽ thay đổi
-    this.setState({ formValue: productClick }, () => {
+    this.setState({ formValue: sinhVienClick }, () => {
       this.setState({ valid: this.checkFormValid() });
     });
   };
@@ -121,11 +146,68 @@ export default class Form extends Component {
       (item) => item.maSV !== idClick
     );
     // cập nhật lại state
-    this.setState({ arraySinhVien: arraySinhVien });
+    this.setState({
+      arraySinhVien: arraySinhVien,
+      arraySinhVienSearch: arraySinhVien,
+    });
+  };
+  handleSave = () => {
+    this.setState({
+      formValue: { maSV: "", hoTen: "", soDienThoai: "", email: "" },
+    });
+  };
+  removeVietnameseTones = (str) => {
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    str = str.replace(/đ/g, "d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    // Some system encode vietnamese combining accent as individual utf-8 characters
+    // Một vài bộ encode coi các dấu mũ, dấu chữ như một kí tự riêng biệt nên thêm hai dòng này
+    str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); // ̀ ́ ̃ ̉ ̣  huyền, sắc, ngã, hỏi, nặng
+    str = str.replace(/\u02C6|\u0306|\u031B/g, ""); // ˆ ̆ ̛  Â, Ê, Ă, Ơ, Ư
+    // Remove extra spaces
+    // Bỏ các khoảng trắng liền nhau
+    str = str.replace(/ + /g, " ");
+    str = str.trim();
+    // Remove punctuations
+    // Bỏ dấu câu, kí tự đặc biệt
+    str = str.replace(
+      /!|@|%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\.|\:|\;|\'|\"|\&|\#|\[|\]|~|\$|_|`|-|{|}|\||\\/g,
+      " "
+    );
+    str = str.toLowerCase();
+    return str;
+  };
+  handleSearchSinhVien = (e) => {
+    let txtInput = e.target.value;
+    txtInput = txtInput.trim().toLowerCase();
+    txtInput = this.removeVietnameseTones(txtInput);
+    let arrayKetQua = [];
+    // Duyệt
+    for (let i = 0; i < this.state.arraySinhVien.length; i++) {
+      let tenSinhVien = this.state.arraySinhVien[i].hoTen;
+      tenSinhVien = this.removeVietnameseTones(tenSinhVien);
+      if (tenSinhVien.includes(txtInput)) {
+        arrayKetQua.push(this.state.arraySinhVien[i]);
+      }
+    }
+    this.setState({ arraySinhVienSearch: arrayKetQua });
   };
 
   render() {
-    let { formValue } = this.state;
+    let { formValue, arraySinhVienSearch } = this.state;
+    console.log("arraySinhVien", this.state.arraySinhVien);
+    console.log("arraySinhVienSearch", arraySinhVienSearch);
     return (
       <React.Fragment>
         <form className="container" onSubmit={this.handleSubmit}>
@@ -226,19 +308,45 @@ export default class Form extends Component {
                 type="button"
                 className="btn btn-primary m-2"
                 disabled={!this.state.valid}
+                onClick={this.handleUpdateSinhVien}
               >
-                Lưu
+                Cập nhật
               </button>
             </div>
           </div>
         </form>
-        <div className="container mt-2">
-          <TableUser
-            arraySinhVien={this.state.arraySinhVien}
-            handleEditSinhVien={this.handleEditSinhVien}
-            handleDelSinhVien={this.handleDelSinhVien}
+        <div className="container mt-3">
+          <h3
+            className="bg-dark text-white p-3"
+            style={{
+              borderRadius: "5px",
+            }}
+          >
+            Tìm kiếm
+          </h3>
+          <SearchBar
+            handleSearchSinhVien={this.handleSearchSinhVien}
+            handleGetInput={this.handleGetInput}
           />
         </div>
+
+        {arraySinhVienSearch.length > 0 ? (
+          <div className="container mt-2">
+            <TablerSearchUser
+              arraySinhVienSearch={this.state.arraySinhVienSearch}
+              handleEditSinhVien={this.handleEditSinhVien}
+              handleDelSinhVien={this.handleDelSinhVien}
+            />
+          </div>
+        ) : (
+          <div className="container mt-2">
+            <TableUser
+              arraySinhVien={this.state.arraySinhVien}
+              handleEditSinhVien={this.handleEditSinhVien}
+              handleDelSinhVien={this.handleDelSinhVien}
+            />
+          </div>
+        )}
       </React.Fragment>
     );
   }
